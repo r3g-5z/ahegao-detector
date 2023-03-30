@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import type { ButtplugClientDevice } from 'buttplug';
+import { ButtplugClientDevice, ButtplugClient, ButtplugNodeWebsocketClientConnector } from 'buttplug';
 import { Subject } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
-import { AnalyticsService } from './analytics.service';
 
 /**
  * Currently, the Buttplug library mustn't get minified. To avoid having the whole project unminified, the library is included as additional
@@ -29,8 +28,8 @@ export class DeviceService {
         return this._intensity$;
     }
 
-    private readonly connector = new window['Buttplug'].ButtplugEmbeddedClientConnector();
-    private readonly client = new window['Buttplug'].ButtplugClient('Ahegao Detector');
+    private readonly connector = new ButtplugNodeWebsocketClientConnector('ws://localhost:12345');
+    private readonly client = new ButtplugClient('Ahegao Detector');
     private clientConnected = false;
     private inPriority = false;
 
@@ -42,7 +41,7 @@ export class DeviceService {
     public async connect(): Promise<void> {
         try {
             if (!this.clientConnected) {
-                await this.client.Connect(this.connector);
+                await this.client.connect(this.connector);
                 this.clientConnected = true;
             }
 
@@ -50,7 +49,7 @@ export class DeviceService {
                 throttleTime(THROTTLE_TIME, undefined, {leading: false, trailing: true})
             ).subscribe((intensity) => this.sendIntensity(intensity));
 
-            await this.client.StartScanning();
+            await this.client.startScanning();
         } catch (e) {
             this.errorHandler(e);
         }
@@ -81,22 +80,22 @@ export class DeviceService {
      * Stops all devices. Intended to be used when the user closes the tab.
      */
     public async forceStop(): Promise<void> {
-        this.setIntesity(0, true);
+        await this.setIntesity(0, true);
         // Immediately send command without waiting for throttle
-        this.sendIntensity(0);
+        await this.sendIntensity(0);
     }
 
     private async sendIntensity(intensity: number): Promise<void> {
         if (intensity <= 0) {
             // Stop all
             for (const device of this.connectedDevices) {
-                await device.SendStopDeviceCmd();
+                await device.stop();
             }
             return;
         }
         for (const device of this.connectedDevices) {
-            if (device.AllowedMessages.includes('VibrateCmd')) {
-                await device.SendVibrateCmd(intensity);
+            if (device.eventNames().includes('VibrateCmd')) {
+                await device.vibrate(intensity);
             }
             // TODO: Other types
         }
@@ -105,7 +104,6 @@ export class DeviceService {
     private onDeviceAdded(device: ButtplugClientDevice): void {
         this.connectedDevices.push(device);
         this.deviceChanges$.next({event: 'connected', device});
-        AnalyticsService.event('device added', 'devices', device.Name);
     }
 
     private onDeviceRemoved(device: ButtplugClientDevice): void {

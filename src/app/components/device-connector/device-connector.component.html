@@ -30,7 +30,7 @@
             <ng-template #devicesList>
                 <ul class="devices-list">
                     <li *ngFor="let device of devices">
-                        <app-typicon [icon]="'chevron-right'" [uppercase]="true"></app-typicon> {{device.device.Name}} –
+                        <app-typicon [icon]="'chevron-right'" [uppercase]="true"></app-typicon> {{device.device.name}} –
                         <span *ngIf="device.status === 'connected'; else disconnected" class="connected">
                             Connected <app-typicon [icon]="'wi-fi'" [uppercase]="true"></app-typicon>
                         </span>

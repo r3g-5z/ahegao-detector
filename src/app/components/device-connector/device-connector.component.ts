@@ -29,7 +29,7 @@ export class DeviceConnectorComponent implements OnInit {
         this.deviceService.deviceChanges$.subscribe((event) => {
             // Remove existing devices with the same name and old status
             this.devices = this.devices.filter((device) => {
-                return device.device.Name !== event.device.Name || device.status === event.event;
+                return device.device.name !== event.device.name || device.status === event.event;
             });
             // Add device
             this.devices.push({device: event.device, status: event.event});

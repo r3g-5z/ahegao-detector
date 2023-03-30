@@ -114,5 +114,8 @@
       }
     }
   },
-  "defaultProject": "ahegao-detector"
+  "defaultProject": "ahegao-detector",
+  "cli": {
+    "analytics": false
+  }
 }

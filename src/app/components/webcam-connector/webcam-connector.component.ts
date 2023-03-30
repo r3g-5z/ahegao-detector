@@ -2,7 +2,6 @@ import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { DetectionService } from 'src/app/services/detection.service';
 import { Observable, from, forkJoin } from 'rxjs';
 import { WebcamComponent } from '../webcam/webcam.component';
-import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
     selector: 'app-webcam-connector',
@@ -57,7 +56,6 @@ export class WebcamConnectorComponent implements OnInit {
                 left: 0,
                 behavior: 'smooth'
             });
-            AnalyticsService.event('cam connected', 'cam');
 
             this.webcamComponent.isLoading = true;
             forkJoin([this.isWebcamLoaded$, this.isModelLoaded$]).subscribe(([webcam]) => {
